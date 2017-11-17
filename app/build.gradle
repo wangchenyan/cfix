@@ -1,6 +1,12 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.wcy.cfix'
 
+cfix {
+    includePackage = ['me/wcy/cfix/simple']
+    excludeClass = []
+    debugOn = true
+}
+
 android {
     compileSdkVersion 25
     buildToolsVersion '25.0.3'
