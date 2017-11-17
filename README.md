@@ -1,2 +1,2 @@
 # CFix
-Android HotFix library based on ClassLoader
+Android HotFix library forked from Nuwa
