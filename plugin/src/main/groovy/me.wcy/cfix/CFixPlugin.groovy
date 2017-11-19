@@ -35,11 +35,10 @@ class CFixPlugin implements Plugin<Project> {
             debugOn = extension.debugOn
 
             project.android.applicationVariants.each { variant ->
-                println("> variant: ${variant.name}")
                 if (!variant.name.contains(DEBUG) || (variant.name.contains(DEBUG) && debugOn)) {
-                    Map hashMap
                     File cfixDir
                     File patchDir
+                    Map hashMap
 
                     def transformClassesAndResourcesWithProguardTask = project.tasks.findByName("transformClassesAndResourcesWithProguardFor${variant.name.capitalize()}")
                     def transformClassesWithDexTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}")
@@ -51,8 +50,7 @@ class CFixPlugin implements Plugin<Project> {
                     if (oldCFixDir) {
                         def mappingFile = CFixFileUtils.getVariantFile(oldCFixDir, variant, MAPPING_TXT)
                         CFixAndroidUtils.applymapping(transformClassesAndResourcesWithProguardTask, mappingFile)
-                    }
-                    if (oldCFixDir) {
+
                         def hashFile = CFixFileUtils.getVariantFile(oldCFixDir, variant, HASH_TXT)
                         hashMap = CFixMapUtils.parseMap(hashFile)
                     }
@@ -60,7 +58,7 @@ class CFixPlugin implements Plugin<Project> {
                     def dirName = variant.dirName
                     cfixDir = new File("${project.buildDir}/outputs/cfix")
                     def outputDir = new File("${cfixDir}/${dirName}")
-                    def hashFile = new File(outputDir, "hash.txt")
+                    def hashFile = new File(outputDir, HASH_TXT)
 
                     def cfixPatch = "cfix${variant.name.capitalize()}Patch"
                     project.task(cfixPatch) << {
@@ -76,8 +74,8 @@ class CFixPlugin implements Plugin<Project> {
                         inputFiles.each { file ->
                             println("> cfix: input: ${file.absolutePath}")
                         }
-                        Set<File> singleFiles = new HashSet();
-                        CFixFileUtils.getSingleFiles(inputFiles, singleFiles);
+                        Set<File> singleFiles = new HashSet()
+                        CFixFileUtils.getSingleFiles(inputFiles, singleFiles)
                         singleFiles.each { file ->
                             def path = file.absolutePath
                             if (path.endsWith(".jar")) {
@@ -87,11 +85,12 @@ class CFixPlugin implements Plugin<Project> {
                             }
                         }
                     }
+
                     cfixJarBeforeDexTask = project.tasks[cfixJarBeforeDex]
-                    cfixJarBeforeDexTask.dependsOn transformClassesWithDexTask.taskDependencies.getDependencies(transformClassesWithDexTask)
-                    transformClassesWithDexTask.dependsOn cfixJarBeforeDexTask
 
                     cfixJarBeforeDexTask.doFirst {
+                        println("> cfix: variant: ${variant.name}")
+
                         def applicationName = CFixAndroidUtils.getApplication(manifestFile)
                         if (applicationName != null) {
                             excludeClass.add(applicationName)
@@ -111,10 +110,13 @@ class CFixPlugin implements Plugin<Project> {
                     cfixJarBeforeDexTask.doLast {
                         if (transformClassesAndResourcesWithProguardTask) {
                             def mapFile = new File("${project.buildDir}/outputs/mapping/${variant.dirName}/mapping.txt")
-                            def newMapFile = new File("${cfixDir}/${variant.dirName}/mapping.txt");
+                            def newMapFile = new File("${cfixDir}/${variant.dirName}/mapping.txt")
                             FileUtils.copyFile(mapFile, newMapFile)
                         }
                     }
+
+                    cfixJarBeforeDexTask.dependsOn transformClassesWithDexTask.taskDependencies.getDependencies(transformClassesWithDexTask)
+                    transformClassesWithDexTask.dependsOn cfixJarBeforeDexTask
 
                     cfixPatchTask.dependsOn cfixJarBeforeDexTask
                 }

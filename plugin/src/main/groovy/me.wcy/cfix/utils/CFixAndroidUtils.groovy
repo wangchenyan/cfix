@@ -7,13 +7,10 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 
-/**
- * Created by jixin.jia on 15/11/10.
- */
 class CFixAndroidUtils {
     private static final String PATCH_NAME = "patch.jar"
 
-    public static String getApplication(File manifestFile) {
+    static String getApplication(File manifestFile) {
         def manifest = new XmlParser().parse(manifestFile)
         def androidTag = new Namespace("http://schemas.android.com/apk/res/android", 'android')
         def applicationName = manifest.application[0].attribute(androidTag.name)
@@ -21,10 +18,10 @@ class CFixAndroidUtils {
         if (applicationName != null) {
             return applicationName.replace(".", "/") + ".class"
         }
-        return null;
+        return null
     }
 
-    public static dex(Project project, File classDir) {
+    static dex(Project project, File classDir) {
         if (classDir.listFiles().size()) {
             def sdkDir
 
@@ -56,7 +53,7 @@ class CFixAndroidUtils {
         }
     }
 
-    public static applymapping(TransformTask proguardTask, File mappingFile) {
+    static applymapping(TransformTask proguardTask, File mappingFile) {
         if (proguardTask) {
             def transform = (ProGuardTransform) proguardTask.getTransform()
             if (mappingFile.exists()) {

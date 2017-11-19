@@ -1,4 +1,4 @@
-package me.wcy.cfix.lib.util;
+package me.wcy.cfix.lib.utils;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -9,9 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * Created by jixin.jia on 15/10/31.
- */
 public class AssetUtils {
     public static String copyAsset(Context context, String assetName, File dir) throws IOException {
         File outFile = new File(dir, assetName);

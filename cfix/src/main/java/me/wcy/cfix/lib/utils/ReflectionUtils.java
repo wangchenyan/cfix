@@ -1,10 +1,7 @@
-package me.wcy.cfix.lib.util;
+package me.wcy.cfix.lib.utils;
 
 import java.lang.reflect.Field;
 
-/**
- * Created by jixin.jia on 15/10/31.
- */
 public class ReflectionUtils {
     public static Object getField(Object obj, Class<?> cl, String field)
             throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {

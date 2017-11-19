@@ -1,12 +1,9 @@
 package me.wcy.cfix.utils
 
-/**
- * Created by jixin.jia on 15/11/10.
- */
 class CFixSetUtils {
 
-    public static boolean isExcluded(String path, Set<String> excludeClass) {
-        def isExcluded = false;
+    static boolean isExcluded(String path, Set<String> excludeClass) {
+        def isExcluded = false
         excludeClass.each { exclude ->
             if (path.endsWith(exclude)) {
                 isExcluded = true
@@ -15,12 +12,12 @@ class CFixSetUtils {
         return isExcluded
     }
 
-    public static boolean isIncluded(String path, Set<String> includePackage) {
+    static boolean isIncluded(String path, Set<String> includePackage) {
         if (includePackage.size() == 0) {
             return true
         }
 
-        def isIncluded = false;
+        def isIncluded = false
         includePackage.each { include ->
             if (path.contains(include)) {
                 isIncluded = true

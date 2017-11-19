@@ -6,12 +6,9 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 
-import me.wcy.cfix.lib.util.AssetUtils;
-import me.wcy.cfix.lib.util.DexUtils;
+import me.wcy.cfix.lib.utils.AssetUtils;
+import me.wcy.cfix.lib.utils.DexUtils;
 
-/**
- * Created by jixin.jia on 15/10/31.
- */
 public class CFix {
     private static final String TAG = "cfix";
     private static final String HACK_DEX = "hack.apk";

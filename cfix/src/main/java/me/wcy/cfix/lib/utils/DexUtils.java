@@ -1,13 +1,10 @@
-package me.wcy.cfix.lib.util;
+package me.wcy.cfix.lib.utils;
 
 import java.lang.reflect.Array;
 
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 
-/**
- * Created by jixin.jia on 15/10/31.
- */
 public class DexUtils {
 
     public static void injectDexAtFirst(String dexPath, String defaultDexOptPath) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {

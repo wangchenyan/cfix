@@ -1,11 +1,9 @@
 package me.wcy.cfix.utils
-/**
- * Created by jixin.jia on 15/11/10.
- */
+
 class CFixMapUtils {
     private static final String MAP_SEPARATOR = ":"
 
-    public static boolean notSame(Map map, String name, String hash) {
+    static boolean notSame(Map map, String name, String hash) {
         def notSame = false
         if (map) {
             def value = map.get(name)
@@ -20,7 +18,7 @@ class CFixMapUtils {
         return notSame
     }
 
-    public static Map parseMap(File hashFile) {
+    static Map parseMap(File hashFile) {
         def hashMap = [:]
         if (hashFile.exists()) {
             hashFile.eachLine {
@@ -35,7 +33,7 @@ class CFixMapUtils {
         return hashMap
     }
 
-    public static format(String path, String hash) {
+    static format(String path, String hash) {
         return path + MAP_SEPARATOR + hash + "\n"
     }
 }
