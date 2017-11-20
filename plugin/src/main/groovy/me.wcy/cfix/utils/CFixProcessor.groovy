@@ -1,8 +1,11 @@
 package me.wcy.cfix.utils
 
 import com.android.build.gradle.api.BaseVariant
+import javassist.ClassPool
+import javassist.CtClass
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.IOUtils
+import org.gradle.api.Project
 import org.objectweb.asm.*
 
 import java.util.jar.JarEntry
@@ -11,11 +14,33 @@ import java.util.jar.JarOutputStream
 import java.util.zip.ZipEntry
 
 class CFixProcessor {
+    static ClassPool classPool
+
+    static init(Project project) {
+        classPool = ClassPool.default
+
+        File hackFile = new File("${project.buildDir}/outputs/cfix/hack")
+        hackFile.deleteDir()
+        hackFile.mkdirs()
+        CtClass hackClass = classPool.makeClass("me.wcy.cfix.Hack")
+        hackClass.writeFile(hackFile.absolutePath)
+        classPool.appendClassPath(hackFile.absolutePath)
+    }
 
     static processJar(File jarFile, File hashFile, Map hashMap, File patchDir,
                       HashSet<String> includePackage, HashSet<String> excludeClass) {
         if (shouldProcessJar(jarFile)) {
             println("> cfix: process jar: ${jarFile.absolutePath}")
+
+            File jarDir = "${jarFile.parentFile}/${jarFile.name}"
+            CFixFileUtils.unZipJar(jarFile, jarDir)
+            classPool.appendClassPath(jarDir)
+            jarDir.eachFileRecurse { file ->
+                String name = file.absolutePath.substring(jarDir.absolutePath.length() + 1)
+                if (shouldProcessClass(name, includePackage, excludeClass)) {
+
+                }
+            }
 
             def optJar = new File(jarFile.getParent(), jarFile.name + ".opt")
 

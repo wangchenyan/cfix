@@ -9,7 +9,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class CFixPlugin implements Plugin<Project> {
-    private static final String CFIX_DIR = "CFixDir"
+    private static final String CFIX_DIR = "cfixDir"
     private static final String CFIX_PATCHES = "cfixPatches"
 
     private static final String MAPPING_TXT = "mapping.txt"
@@ -74,13 +74,11 @@ class CFixPlugin implements Plugin<Project> {
                         inputFiles.each { file ->
                             println("> cfix: input: ${file.absolutePath}")
                         }
-                        Set<File> singleFiles = new HashSet()
-                        CFixFileUtils.getSingleFiles(inputFiles, singleFiles)
-                        singleFiles.each { file ->
-                            def path = file.absolutePath
-                            if (path.endsWith(".jar")) {
+                        Set<File> files = CFixFileUtils.getFiles(inputFiles)
+                        files.each { file ->
+                            if (file.absolutePath.endsWith(".jar")) {
                                 CFixProcessor.processJar(file, hashFile, hashMap, patchDir, includePackage, excludeClass)
-                            } else if (path.endsWith(".class")) {
+                            } else if (file.absolutePath.endsWith(".class")) {
                                 CFixProcessor.processClass(variant, file, hashFile, hashMap, patchDir, includePackage, excludeClass)
                             }
                         }
@@ -90,6 +88,8 @@ class CFixPlugin implements Plugin<Project> {
 
                     cfixJarBeforeDexTask.doFirst {
                         println("> cfix: variant: ${variant.name}")
+
+                        CFixProcessor.init(project)
 
                         def applicationName = CFixAndroidUtils.getApplication(manifestFile)
                         if (applicationName != null) {
