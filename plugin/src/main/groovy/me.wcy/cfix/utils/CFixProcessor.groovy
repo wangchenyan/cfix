@@ -3,161 +3,119 @@ package me.wcy.cfix.utils
 import com.android.build.gradle.api.BaseVariant
 import javassist.ClassPool
 import javassist.CtClass
+import javassist.CtConstructor
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.commons.io.IOUtils
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
-import org.objectweb.asm.*
-
-import java.util.jar.JarEntry
-import java.util.jar.JarFile
-import java.util.jar.JarOutputStream
-import java.util.zip.ZipEntry
 
 class CFixProcessor {
     static ClassPool classPool
 
     static init(Project project) {
-        classPool = ClassPool.default
+        if (classPool == null) {
+            classPool = ClassPool.default
 
-        File hackFile = new File("${project.buildDir}/outputs/cfix/hack")
-        hackFile.deleteDir()
-        hackFile.mkdirs()
-        CtClass hackClass = classPool.makeClass("me.wcy.cfix.Hack")
-        hackClass.writeFile(hackFile.absolutePath)
-        classPool.appendClassPath(hackFile.absolutePath)
+            File hackDirFile = new File("${project.buildDir}/outputs/cfix/hack")
+            hackDirFile.deleteDir()
+            hackDirFile.mkdirs()
+            CtClass hackClass = classPool.makeClass("me.wcy.cfix.Hack")
+            hackClass.writeFile(hackDirFile.absolutePath)
+            classPool.appendClassPath(hackDirFile.absolutePath)
+        }
     }
 
     static processJar(File jarFile, File hashFile, Map hashMap, File patchDir,
                       HashSet<String> includePackage, HashSet<String> excludeClass) {
-        if (shouldProcessJar(jarFile)) {
+        if (!jarFile.exists()) {
+            return
+        }
+
+        if (shouldProcessJar(jarFile.absolutePath)) {
             println("> cfix: process jar: ${jarFile.absolutePath}")
 
-            File jarDir = "${jarFile.parentFile}/${jarFile.name}"
-            CFixFileUtils.unZipJar(jarFile, jarDir)
-            classPool.appendClassPath(jarDir)
-            jarDir.eachFileRecurse { file ->
-                String name = file.absolutePath.substring(jarDir.absolutePath.length() + 1)
-                if (shouldProcessClass(name, includePackage, excludeClass)) {
-
-                }
-            }
-
-            def optJar = new File(jarFile.getParent(), jarFile.name + ".opt")
-
-            def file = new JarFile(jarFile)
-            Enumeration enumeration = file.entries()
-            JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(optJar))
-
-            while (enumeration.hasMoreElements()) {
-                JarEntry jarEntry = (JarEntry) enumeration.nextElement()
-                String entryName = jarEntry.getName()
-                ZipEntry zipEntry = new ZipEntry(entryName)
-
-                InputStream inputStream = file.getInputStream(jarEntry)
-                jarOutputStream.putNextEntry(zipEntry)
-
-                if (shouldProcessClass(entryName, includePackage, excludeClass)) {
-                    def bytes = referHackWhenInit(inputStream)
-                    jarOutputStream.write(bytes)
-
-                    def hash = DigestUtils.shaHex(bytes)
-                    hashFile.append(CFixMapUtils.format(entryName, hash))
-
-                    if (CFixMapUtils.notSame(hashMap, entryName, hash)) {
-                        CFixFileUtils.copyBytesToFile(bytes, CFixFileUtils.touchFile(patchDir, entryName))
+            File optDirFile = new File(jarFile.absolutePath.substring(0, jarFile.absolutePath.length() - 4))
+            optDirFile.deleteDir()
+            CFixFileUtils.unZipJar(jarFile, optDirFile)
+            classPool.appendClassPath(optDirFile.absolutePath)
+            optDirFile.eachFileRecurse { file ->
+                if (file.isFile()) {
+                    String classPath = file.absolutePath.substring(optDirFile.absolutePath.length() + 1)
+                    if (shouldProcessClass(classPath, includePackage, excludeClass)) {
+                        referHackWhenInit(optDirFile.absolutePath, classPath, hashFile, hashMap, patchDir)
                     }
-                } else {
-                    jarOutputStream.write(IOUtils.toByteArray(inputStream))
                 }
-                jarOutputStream.closeEntry()
             }
-            jarOutputStream.close()
-            file.close()
 
-            if (jarFile.exists()) {
-                jarFile.delete()
-            }
-            optJar.renameTo(jarFile)
+            jarFile.delete()
+            CFixFileUtils.zipJar(optDirFile, jarFile)
+            optDirFile.deleteDir()
         }
     }
 
     static processClass(BaseVariant variant, File classFile, File hashFile, Map hashMap,
                         File patchDir, HashSet<String> includePackage, HashSet<String> excludeClass) {
-        if (classFile == null || !classFile.exists()) {
+        if (!classFile.exists()) {
             return
         }
 
-        String name = classFile.absolutePath.replace("\\", "/").split("${variant.dirName}/")[1]
-        if (shouldProcessClass(name, includePackage, excludeClass)) {
+        String[] array = CFixFileUtils.formatPath(classFile.absolutePath).split("/${variant.dirName}/")
+        String dir = array[0] + "/" + variant.dirName
+        String classPath = array[1]
+        if (shouldProcessClass(classPath, includePackage, excludeClass)) {
             println("> cfix: process class: ${classFile.absolutePath}")
 
-            def optClass = new File(classFile.getParent(), classFile.name + ".opt")
+            classPool.appendClassPath(dir)
+            referHackWhenInit(dir, classPath, hashFile, hashMap, patchDir)
+        }
+    }
 
-            FileInputStream inputStream = new FileInputStream(classFile)
-            FileOutputStream outputStream = new FileOutputStream(optClass)
+    private static void referHackWhenInit(String dir, String classPath, File hashFile, Map hashMap,
+                                          File patchDir) {
+        classPath = CFixFileUtils.formatPath(classPath)
+        String className = classPath.substring(0, classPath.length() - 6)
+                .replace("/", ".")
+        CtClass clazz = classPool.getCtClass(className)
+        if (clazz.isFrozen()) {
+            clazz.defrost()
+        }
 
-            def bytes = referHackWhenInit(inputStream)
-            outputStream.write(bytes)
-            inputStream.close()
-            outputStream.close()
-            if (classFile.exists()) {
-                classFile.delete()
-            }
-            optClass.renameTo(classFile)
+        CtConstructor[] constructors = clazz.getConstructors()
+        if (constructors.length > 0) {
+            CtConstructor constructor = constructors[0]
+            constructor.insertBeforeBody("Class cls = me.wcy.cfix.Hack.class;")
+            clazz.writeFile(dir)
+            clazz.detach()
 
-            def hash = DigestUtils.shaHex(bytes)
-            hashFile.append(CFixMapUtils.format(name, hash))
+            // save hash
+            File classFile = new File(dir + "/" + classPath)
+            InputStream is = new FileInputStream(classFile)
+            def hash = DigestUtils.shaHex(is)
+            is.close()
+            hashFile.append(CFixMapUtils.format(classPath, hash))
 
-            if (CFixMapUtils.notSame(hashMap, name, hash)) {
-                CFixFileUtils.copyBytesToFile(bytes, CFixFileUtils.touchFile(patchDir, name))
+            if (CFixMapUtils.notSame(hashMap, classPath, hash)) {
+                FileUtils.copyFile(classFile, CFixFileUtils.touchFile(patchDir, classPath))
             }
         }
     }
 
-    // refer hack class when object init
-    private static byte[] referHackWhenInit(InputStream inputStream) {
-        ClassReader cr = new ClassReader(inputStream)
-        ClassWriter cw = new ClassWriter(cr, 0)
-        ClassVisitor cv = new ClassVisitor(Opcodes.ASM4, cw) {
-            @Override
-            MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions)
-                mv = new MethodVisitor(Opcodes.ASM4, mv) {
-                    @Override
-                    void visitInsn(int opcode) {
-                        if ("<init>".equals(name) && opcode == Opcodes.RETURN) {
-                            super.visitLdcInsn(Type.getType("Lme/wcy/cfix/Hack;"))
-                        }
-                        super.visitInsn(opcode)
-                    }
-                }
-                return mv
-            }
-        }
-        cr.accept(cv, 0)
-        return cw.toByteArray()
+    private static boolean shouldProcessJar(String jarPath) {
+        jarPath = CFixFileUtils.formatPath(jarPath)
+        return (jarPath.endsWith("classes.jar") || jarPath.endsWith("main.jar")) &&
+                !jarPath.contains("/.android/build-cache/") &&
+                !jarPath.contains("/android/m2repository/")
     }
 
-    private static boolean shouldProcessJar(File jarFile) {
-        if (jarFile == null || !jarFile.exists()) {
-            return false
-        }
-
-        String formatPath = jarFile.absolutePath.replace("\\", "/")
-        return (formatPath.endsWith("classes.jar") || formatPath.endsWith("main.jar")) &&
-                !formatPath.contains("/.android/build-cache/") &&
-                !formatPath.contains("/android/m2repository/")
-    }
-
-    private static boolean shouldProcessClass(String name, HashSet<String> includePackage,
+    private static boolean shouldProcessClass(String classPath, HashSet<String> includePackage,
                                               HashSet<String> excludeClass) {
-        return name.endsWith(".class") &&
-                !name.startsWith("me/wcy/cfix/lib/") &&
-                !name.contains("android/support/") &&
-                !name.contains("/R\$") &&
-                !name.endsWith("/R.class") &&
-                !name.endsWith("/BuildConfig.class") &&
-                CFixSetUtils.isIncluded(name, includePackage) &&
-                !CFixSetUtils.isExcluded(name, excludeClass)
+        classPath = CFixFileUtils.formatPath(classPath)
+        return classPath.endsWith(".class") &&
+                !classPath.startsWith("me/wcy/cfix/lib/") &&
+                !classPath.contains("android/support/") &&
+                !classPath.contains("/R\$") &&
+                !classPath.endsWith("/R.class") &&
+                !classPath.endsWith("/BuildConfig.class") &&
+                CFixSetUtils.isIncluded(classPath, includePackage) &&
+                !CFixSetUtils.isExcluded(classPath, excludeClass)
     }
 }

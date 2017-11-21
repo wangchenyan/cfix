@@ -1,6 +1,5 @@
 package me.wcy.cfix.utils
 
-import org.apache.commons.io.FileUtils
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 
@@ -15,13 +14,6 @@ class CFixFileUtils {
         def file = new File("${dir}/${path}")
         file.getParentFile().mkdirs()
         return file
-    }
-
-    static copyBytesToFile(byte[] bytes, File file) {
-        if (!file.exists()) {
-            file.createNewFile()
-        }
-        FileUtils.writeByteArrayToFile(file, bytes)
     }
 
     static File getFileFromProperty(Project project, String property) {
@@ -44,19 +36,21 @@ class CFixFileUtils {
 
     static Set<File> getFiles(Set<File> inputFiles) {
         Set<File> files = []
-        for (def file : inputFiles) {
+        for (File file : inputFiles) {
             if (file.directory) {
-                file.eachFileRecurse {
-                    files.add(it)
+                file.eachFileRecurse { f ->
+                    if (f.file) {
+                        files.add(f)
+                    }
                 }
-            } else {
-                files(file)
+            } else if (file.file) {
+                files.add(file)
             }
         }
         return files
     }
 
-    static void unZipJar(File jar, String dest) {
+    static void unZipJar(File jar, File dest) {
         JarFile jarFile = new JarFile(jar)
         Enumeration<JarEntry> jarEntries = jarFile.entries()
         while (jarEntries.hasMoreElements()) {
@@ -65,7 +59,7 @@ class CFixFileUtils {
                 continue
             }
             String entryName = jarEntry.getName()
-            String outFileName = dest + "/" + entryName
+            String outFileName = dest.absolutePath + "/" + entryName
             File outFile = new File(outFileName)
             outFile.parentFile.mkdirs()
             InputStream inputStream = jarFile.getInputStream(jarEntry)
@@ -77,7 +71,7 @@ class CFixFileUtils {
         jarFile.close()
     }
 
-    static void zipJar(File jarDir, String dest) {
+    static void zipJar(File jarDir, File dest) {
         JarOutputStream outputStream = new JarOutputStream(new FileOutputStream(dest))
         jarDir.eachFileRecurse { f ->
             if (!f.directory) {
@@ -89,5 +83,9 @@ class CFixFileUtils {
             }
         }
         outputStream.close()
+    }
+
+    static String formatPath(String path) {
+        return path.replace("\\", "/")
     }
 }
