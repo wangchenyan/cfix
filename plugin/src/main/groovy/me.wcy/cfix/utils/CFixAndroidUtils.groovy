@@ -25,36 +25,40 @@ class CFixAndroidUtils {
     }
 
     static String dex(Project project, File classDir) {
-        String patchPath = classDir.getParent() + "/" + PATCH_NAME
+        String patchPath = classDir.parent + "/" + PATCH_NAME
         if (classDir.listFiles().size()) {
-            String sdkDir
-            Properties properties = new Properties()
-            File localProps = project.rootProject.file("local.properties")
-            if (localProps.exists()) {
-                properties.load(localProps.newDataInputStream())
-                sdkDir = properties.getProperty("sdk.dir")
-            } else {
-                sdkDir = System.getenv("ANDROID_HOME")
-            }
-            if (sdkDir) {
-                String cmdExt = Os.isFamily(Os.FAMILY_WINDOWS) ? '.bat' : ''
-                ByteArrayOutputStream stdout = new ByteArrayOutputStream()
-                project.exec {
-                    commandLine "${sdkDir}/build-tools/${project.android.buildToolsVersion}/dx${cmdExt}",
-                            '--dex',
-                            "--output=${patchPath}",
-                            "${classDir.absolutePath}"
-                    standardOutput = stdout
-                }
-                String error = stdout.toString().trim()
-                if (error) {
-                    println "dex error:" + error
-                }
-            } else {
+            String sdkDir = getSdkDir(project)
+            if (sdkDir == null) {
                 throw new InvalidUserDataException('$ANDROID_HOME is not defined')
+            }
+
+            String buildToolsVersion = project.android.buildToolsVersion
+            String cmdExt = Os.isFamily(Os.FAMILY_WINDOWS) ? '.bat' : ''
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream()
+            project.exec {
+                commandLine "${sdkDir}/build-tools/${buildToolsVersion}/dx${cmdExt}",
+                        '--dex',
+                        "--output=${patchPath}",
+                        "${classDir.absolutePath}"
+                standardOutput = stdout
+            }
+            String error = stdout.toString().trim()
+            if (error) {
+                println "dex error:" + error
             }
         }
         return patchPath
+    }
+
+    static String getSdkDir(Project project) {
+        Properties properties = new Properties()
+        File localProps = project.rootProject.file("local.properties")
+        if (localProps.exists()) {
+            properties.load(localProps.newDataInputStream())
+            return properties.getProperty("sdk.dir")
+        } else {
+            return System.getenv("ANDROID_HOME")
+        }
     }
 
     static applymapping(TransformTask proguardTask, File mappingFile) {

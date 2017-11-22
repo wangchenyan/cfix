@@ -7,6 +7,7 @@ import javassist.CtConstructor
 import me.wcy.cfix.CFixExtension
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 
 class CFixProcessor {
@@ -15,6 +16,21 @@ class CFixProcessor {
     static init(Project project) {
         if (classPool == null) {
             classPool = ClassPool.default
+
+            String sdkDir = CFixAndroidUtils.getSdkDir(project)
+            if (sdkDir == null) {
+                throw new InvalidUserDataException('$ANDROID_HOME is not defined')
+            }
+
+            String compileSdkVersion = project.android.compileSdkVersion
+            String androidJar = "${sdkDir}/platforms/${compileSdkVersion}/android.jar"
+            String apacheJar = "${sdkDir}/platforms/${compileSdkVersion}/optional/org.apache.http.legacy.jar"
+            if (new File(androidJar).exists()) {
+                classPool.appendClassPath(androidJar)
+            }
+            if (new File(apacheJar).exists()) {
+                classPool.appendClassPath(apacheJar)
+            }
 
             File hackDirFile = new File("${project.buildDir}/outputs/cfix/hack")
             hackDirFile.deleteDir()
