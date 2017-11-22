@@ -4,6 +4,7 @@ import com.android.build.gradle.api.BaseVariant
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtConstructor
+import me.wcy.cfix.CFixExtension
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
@@ -24,8 +25,7 @@ class CFixProcessor {
         }
     }
 
-    static processJar(File jarFile, File hashFile, Map hashMap, File patchDir,
-                      HashSet<String> includePackage, HashSet<String> excludeClass) {
+    static processJar(File jarFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
         if (!jarFile.exists()) {
             return
         }
@@ -40,7 +40,7 @@ class CFixProcessor {
             optDirFile.eachFileRecurse { file ->
                 if (file.isFile()) {
                     String classPath = file.absolutePath.substring(optDirFile.absolutePath.length() + 1)
-                    if (shouldProcessClass(classPath, includePackage, excludeClass)) {
+                    if (shouldProcessClass(classPath, extension)) {
                         referHackWhenInit(optDirFile.absolutePath, classPath, hashFile, hashMap, patchDir)
                     }
                 }
@@ -52,8 +52,7 @@ class CFixProcessor {
         }
     }
 
-    static processClass(BaseVariant variant, File classFile, File hashFile, Map hashMap,
-                        File patchDir, HashSet<String> includePackage, HashSet<String> excludeClass) {
+    static processClass(BaseVariant variant, File classFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
         if (!classFile.exists()) {
             return
         }
@@ -61,7 +60,7 @@ class CFixProcessor {
         String[] array = CFixFileUtils.formatPath(classFile.absolutePath).split("/${variant.dirName}/")
         String dir = array[0] + "/" + variant.dirName
         String classPath = array[1]
-        if (shouldProcessClass(classPath, includePackage, excludeClass)) {
+        if (shouldProcessClass(classPath, extension)) {
             println("> cfix: process class: ${classFile.absolutePath}")
 
             classPool.appendClassPath(dir)
@@ -89,7 +88,7 @@ class CFixProcessor {
             // save hash
             File classFile = new File(dir + "/" + classPath)
             InputStream is = new FileInputStream(classFile)
-            def hash = DigestUtils.shaHex(is)
+            String hash = DigestUtils.shaHex(is)
             is.close()
             hashFile.append(CFixMapUtils.format(classPath, hash))
 
@@ -106,8 +105,7 @@ class CFixProcessor {
                 !jarPath.contains("/android/m2repository/")
     }
 
-    private static boolean shouldProcessClass(String classPath, HashSet<String> includePackage,
-                                              HashSet<String> excludeClass) {
+    private static boolean shouldProcessClass(String classPath, CFixExtension extension) {
         classPath = CFixFileUtils.formatPath(classPath)
         return classPath.endsWith(".class") &&
                 !classPath.startsWith("me/wcy/cfix/lib/") &&
@@ -115,7 +113,7 @@ class CFixProcessor {
                 !classPath.contains("/R\$") &&
                 !classPath.endsWith("/R.class") &&
                 !classPath.endsWith("/BuildConfig.class") &&
-                CFixSetUtils.isIncluded(classPath, includePackage) &&
-                !CFixSetUtils.isExcluded(classPath, excludeClass)
+                CFixSetUtils.isIncluded(classPath, extension.includePackage) &&
+                !CFixSetUtils.isExcluded(classPath, extension.excludeClass)
     }
 }

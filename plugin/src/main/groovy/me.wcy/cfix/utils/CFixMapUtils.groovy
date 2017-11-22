@@ -4,9 +4,9 @@ class CFixMapUtils {
     private static final String MAP_SEPARATOR = ":"
 
     static boolean notSame(Map map, String name, String hash) {
-        def notSame = false
+        boolean notSame = false
         if (map) {
-            def value = map.get(name)
+            String value = map.get(name)
             if (value) {
                 if (!value.equals(hash)) {
                     notSame = true
@@ -19,7 +19,7 @@ class CFixMapUtils {
     }
 
     static Map parseMap(File hashFile) {
-        def hashMap = [:]
+        Map hashMap = [:]
         if (hashFile.exists()) {
             hashFile.eachLine {
                 List list = it.split(MAP_SEPARATOR)

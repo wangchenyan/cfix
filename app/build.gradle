@@ -5,6 +5,12 @@ cfix {
     includePackage = ['me/wcy/cfix/simple']
     excludeClass = []
     debugOn = true
+
+    sign = true
+    storeFile = file("release.jks")
+    storePassword = 'android'
+    keyAlias = 'cfix'
+    keyPassword = 'android'
 }
 
 android {
@@ -23,6 +29,12 @@ android {
         debug {
             storeFile file("debug.keystore")
         }
+        release {
+            storeFile file("release.jks")
+            storePassword 'android'
+            keyAlias 'cfix'
+            keyPassword 'android'
+        }
     }
 
     buildTypes {
@@ -34,7 +46,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 

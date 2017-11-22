@@ -11,13 +11,13 @@ import java.util.zip.ZipEntry
 class CFixFileUtils {
 
     static File touchFile(File dir, String path) {
-        def file = new File("${dir}/${path}")
+        File file = new File("${dir}/${path}")
         file.getParentFile().mkdirs()
         return file
     }
 
     static File getFileFromProperty(Project project, String property) {
-        def file = null
+        File file = null
         if (project.hasProperty(property)) {
             file = new File(project.getProperties()[property])
             if (!file.exists()) {

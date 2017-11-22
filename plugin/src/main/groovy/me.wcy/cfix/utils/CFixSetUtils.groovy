@@ -3,7 +3,7 @@ package me.wcy.cfix.utils
 class CFixSetUtils {
 
     static boolean isExcluded(String path, Set<String> excludeClass) {
-        def isExcluded = false
+        boolean isExcluded = false
         excludeClass.each { exclude ->
             if (path.endsWith(exclude)) {
                 isExcluded = true
@@ -17,7 +17,7 @@ class CFixSetUtils {
             return true
         }
 
-        def isIncluded = false
+        boolean isIncluded = false
         includePackage.each { include ->
             if (path.contains(include)) {
                 isIncluded = true
