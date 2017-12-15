@@ -5,5 +5,5 @@ package me.wcy.cfix.simple;
  */
 
 public interface FixInterface {
-    void inter();
+    void fix();
 }

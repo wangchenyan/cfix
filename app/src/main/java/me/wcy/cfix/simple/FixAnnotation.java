@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 public @interface FixAnnotation {
-    int anno();
+    int fix();
 }
