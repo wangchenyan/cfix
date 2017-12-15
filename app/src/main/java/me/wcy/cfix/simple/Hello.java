@@ -5,7 +5,14 @@ package me.wcy.cfix.simple;
  */
 public class Hello {
 
+    public static Hello newHello() {
+        return new Hello();
+    }
+
     public String hello() {
         return "hello";
+    }
+
+    private Hello() {
     }
 }
