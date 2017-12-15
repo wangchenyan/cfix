@@ -11,7 +11,6 @@ dependencies {
     compile 'com.android.tools.build:gradle:1.5.0'
     compile 'commons-io:commons-io:2.4'
     compile 'commons-codec:commons-codec:1.11'
-    compile 'org.javassist:javassist:3.20.0-GA'
     compile 'org.ow2.asm:asm-all:5.0.3'
 }
 

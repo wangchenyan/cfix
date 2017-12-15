@@ -15,6 +15,6 @@ public class CFixApplication extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         CFix.init(this);
-        CFix.loadPatch(Environment.getExternalStorageDirectory().getPath().concat("/patch.jar"), true);
+        CFix.loadPatch(Environment.getExternalStorageDirectory().getPath().concat("/patch.jar"), !BuildConfig.DEBUG);
     }
 }

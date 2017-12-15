@@ -16,17 +16,9 @@ import java.security.cert.X509Certificate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.security.auth.x500.X500Principal;
-
-
-/**
- * Created by hp on 2016/5/4.
- */
 public class SignChecker {
     private final static String TAG = "CFix";
-    private final static X500Principal DEBUG_DN = new X500Principal("CN=Android Debug,O=Android,C=US");
 
-    private boolean mDebuggable;
     private PublicKey mPublicKey;
 
     public SignChecker(Context context) {
@@ -38,7 +30,6 @@ public class SignChecker {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
             ByteArrayInputStream stream = new ByteArrayInputStream(packageInfo.signatures[0].toByteArray());
             X509Certificate cert = (X509Certificate) certFactory.generateCertificate(stream);
-            mDebuggable = cert.getSubjectX500Principal().equals(DEBUG_DN);
             mPublicKey = cert.getPublicKey();
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
@@ -48,11 +39,6 @@ public class SignChecker {
     }
 
     public boolean verifySign(String path) {
-        if (mDebuggable) {
-            Log.w(TAG, "debuggable, skip patch verify");
-            return true;
-        }
-
         JarFile jarFile = null;
         try {
             jarFile = new JarFile(path);
@@ -63,7 +49,7 @@ public class SignChecker {
                 return false;
             }
 
-            loadDigestes(jarFile, jarEntry);
+            loadDigests(jarFile, jarEntry);
             Certificate[] certs = jarEntry.getCertificates();
             if (certs == null) {
                 Log.w(TAG, "patch verify failed, certs is null");
@@ -99,7 +85,7 @@ public class SignChecker {
         return false;
     }
 
-    private void loadDigestes(JarFile jarFile, JarEntry jarEntry) throws IOException {
+    private void loadDigests(JarFile jarFile, JarEntry jarEntry) throws IOException {
         InputStream is = null;
         try {
             is = jarFile.getInputStream(jarEntry);
