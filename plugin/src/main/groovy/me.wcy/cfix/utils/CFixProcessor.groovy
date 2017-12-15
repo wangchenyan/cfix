@@ -41,6 +41,19 @@ class CFixProcessor {
         }
     }
 
+    static appendClassPath(BaseVariant variant, Set<File> files) {
+        files.each { file ->
+            println("> cfix: input: ${file.absolutePath}")
+            if (file.absolutePath.endsWith(".jar")) {
+                classPool.appendClassPath(file.absolutePath)
+            } else if (file.absolutePath.endsWith(".class")) {
+                String[] array = CFixFileUtils.formatPath(file.absolutePath).split("/${variant.dirName}/")
+                String dir = array[0] + "/" + variant.dirName
+                classPool.appendClassPath(dir)
+            }
+        }
+    }
+
     static processJar(File jarFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
         if (!jarFile.exists()) {
             return
@@ -52,7 +65,6 @@ class CFixProcessor {
             File optDirFile = new File(jarFile.absolutePath.substring(0, jarFile.absolutePath.length() - 4))
             optDirFile.deleteDir()
             CFixFileUtils.unZipJar(jarFile, optDirFile)
-            classPool.appendClassPath(optDirFile.absolutePath)
             optDirFile.eachFileRecurse { file ->
                 if (file.isFile()) {
                     String classPath = file.absolutePath.substring(optDirFile.absolutePath.length() + 1)
@@ -77,9 +89,6 @@ class CFixProcessor {
         String dir = array[0] + "/" + variant.dirName
         String classPath = array[1]
         if (shouldProcessClass(classPath, extension)) {
-            println("> cfix: process class: ${classFile.absolutePath}")
-
-            classPool.appendClassPath(dir)
             referHackWhenInit(dir, classPath, hashFile, hashMap, patchDir)
         }
     }
@@ -89,28 +98,33 @@ class CFixProcessor {
         classPath = CFixFileUtils.formatPath(classPath)
         String className = classPath.substring(0, classPath.length() - 6)
                 .replace("/", ".")
+        println("> cfix: process class: ${className}")
         CtClass clazz = classPool.getCtClass(className)
         if (clazz.isFrozen()) {
             clazz.defrost()
         }
 
-        CtConstructor[] constructors = clazz.getConstructors()
-        if (constructors.length > 0) {
+        CtConstructor[] constructors = clazz.getDeclaredConstructors()
+        if (constructors == null || constructors.length == 0) {
+            CtConstructor constructor = new CtConstructor(new CtClass[0], clazz)
+            constructor.setBody('{\nSystem.out.println(me.wcy.cfix.Hack.class);\n}')
+            clazz.addConstructor(constructor)
+        } else {
             CtConstructor constructor = constructors[0]
-            constructor.insertBeforeBody("Class cls = me.wcy.cfix.Hack.class;")
-            clazz.writeFile(dir)
-            clazz.detach()
+            constructor.insertBeforeBody('System.out.println(me.wcy.cfix.Hack.class);')
+        }
+        clazz.writeFile(dir)
+        clazz.detach()
 
-            // save hash
-            File classFile = new File(dir + "/" + classPath)
-            InputStream is = new FileInputStream(classFile)
-            String hash = DigestUtils.shaHex(is)
-            is.close()
-            hashFile.append(CFixMapUtils.format(classPath, hash))
+        // save hash
+        File classFile = new File(dir + "/" + classPath)
+        InputStream is = new FileInputStream(classFile)
+        String hash = DigestUtils.sha1Hex(is)
+        is.close()
+        hashFile.append(CFixMapUtils.format(classPath, hash))
 
-            if (CFixMapUtils.notSame(hashMap, classPath, hash)) {
-                FileUtils.copyFile(classFile, CFixFileUtils.touchFile(patchDir, classPath))
-            }
+        if (CFixMapUtils.notSame(hashMap, classPath, hash)) {
+            FileUtils.copyFile(classFile, CFixFileUtils.touchFile(patchDir, classPath))
         }
     }
 

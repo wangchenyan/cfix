@@ -13,7 +13,14 @@ import org.gradle.api.Project
 class CFixAndroidUtils {
     private static final String PATCH_NAME = "patch.jar"
 
-    static String getApplication(File manifestFile) {
+    static String getApplication(Set<File> manifestFiles) {
+        File manifestFile = null
+        for (File file : manifestFiles) {
+            if (file.exists() && file.absolutePath.endsWith("AndroidManifest.xml")) {
+                manifestFile = file
+                break
+            }
+        }
         Node manifest = new XmlParser().parse(manifestFile)
         Namespace androidTag = new Namespace("http://schemas.android.com/apk/res/android", 'android')
         String applicationName = manifest.application[0].attribute(androidTag.name)

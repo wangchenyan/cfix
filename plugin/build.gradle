@@ -7,9 +7,9 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    compile 'com.android.tools.build:gradle:2.3.3'
+    compile 'com.android.tools.build:gradle:1.5.0'
     compile 'commons-io:commons-io:2.4'
-    compile 'commons-codec:commons-codec:1.6'
+    compile 'commons-codec:commons-codec:1.11'
     compile 'org.javassist:javassist:3.20.0-GA'
 }
 

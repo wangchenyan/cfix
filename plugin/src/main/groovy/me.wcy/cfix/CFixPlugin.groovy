@@ -40,7 +40,7 @@ class CFixPlugin implements Plugin<Project> {
                     Task transformClassesWithDexTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}")
 
                     Task processManifestTask = project.tasks.findByName("process${variant.name.capitalize()}Manifest")
-                    File manifestFile = processManifestTask.outputs.files.files[1]
+                    Set<File> manifestFiles = processManifestTask.outputs.files.files
 
                     File oldCFixDir = CFixFileUtils.getFileFromProperty(project, CFIX_DIR)
                     if (oldCFixDir) {
@@ -59,10 +59,8 @@ class CFixPlugin implements Plugin<Project> {
                     String cfixJarBeforeDex = "cfixJarBeforeDex${variant.name.capitalize()}"
                     project.task(cfixJarBeforeDex) << {
                         Set<File> inputFiles = transformClassesWithDexTask.inputs.files.files
-                        inputFiles.each { file ->
-                            println("> cfix: input: ${file.absolutePath}")
-                        }
                         Set<File> files = CFixFileUtils.getFiles(inputFiles)
+                        CFixProcessor.appendClassPath(variant, files)
                         files.each { file ->
                             if (file.absolutePath.endsWith(".jar")) {
                                 CFixProcessor.processJar(file, hashFile, hashMap, patchDir, extension)
@@ -79,7 +77,7 @@ class CFixPlugin implements Plugin<Project> {
 
                         CFixProcessor.init(project)
 
-                        String applicationName = CFixAndroidUtils.getApplication(manifestFile)
+                        String applicationName = CFixAndroidUtils.getApplication(manifestFiles)
                         if (applicationName != null) {
                             extension.excludeClass.add(applicationName)
                         }
