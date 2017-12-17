@@ -64,10 +64,10 @@ class CFixPlugin implements Plugin<Project> {
                         }
                         Set<File> files = CFixFileUtils.getFiles(inputFiles)
                         files.each { file ->
-                            if (file.absolutePath.endsWith(".jar")) {
+                            if (file.name.endsWith(".jar")) {
                                 CFixProcessor.processJar(file, hashFile, hashMap, patchDir, extension)
-                            } else if (file.absolutePath.endsWith(".class")) {
-                                CFixProcessor.processClass(variant, file, hashFile, hashMap, patchDir, extension)
+                            } else if (file.name.endsWith(".class")) {
+                                CFixProcessor.processClass(file, hashFile, hashMap, patchDir, extension)
                             }
                         }
                     }
@@ -95,8 +95,8 @@ class CFixPlugin implements Plugin<Project> {
 
                     cfixJarBeforeDexTask.doLast {
                         if (transformClassesAndResourcesWithProguardTask) {
-                            File mapFile = new File("${project.buildDir}/outputs/mapping/${variant.dirName}/mapping.txt")
-                            File newMapFile = new File("${cfixDir}/${variant.dirName}/mapping.txt")
+                            File mapFile = new File("${project.buildDir}/outputs/mapping/${variant.dirName}/${MAPPING_TXT}")
+                            File newMapFile = new File("${cfixDir}/${variant.dirName}/${MAPPING_TXT}")
                             FileUtils.copyFile(mapFile, newMapFile)
                         }
                     }

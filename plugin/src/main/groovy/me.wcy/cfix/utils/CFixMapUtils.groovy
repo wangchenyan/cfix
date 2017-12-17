@@ -33,7 +33,7 @@ class CFixMapUtils {
         return hashMap
     }
 
-    static format(String path, String hash) {
-        return path + MAP_SEPARATOR + hash + "\n"
+    static format(String name, String hash) {
+        return name + MAP_SEPARATOR + hash + "\n"
     }
 }

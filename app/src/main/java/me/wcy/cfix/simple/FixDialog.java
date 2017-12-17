@@ -8,20 +8,18 @@ import android.support.v7.app.AlertDialog;
  */
 public class FixDialog {
     private static FixDialog fixDialog;
-    private Context context;
 
-    public static FixDialog get(Context context) {
+    public static FixDialog get() {
         if (fixDialog == null) {
-            fixDialog = new FixDialog(context);
+            fixDialog = new FixDialog();
         }
         return fixDialog;
     }
 
-    private FixDialog(Context context) {
-        this.context = context;
+    private FixDialog() {
     }
 
-    public void show() {
+    public void show(Context context) {
         new AlertDialog.Builder(context)
                 .setTitle("Congratulations")
                 .setMessage("Patch Success!")

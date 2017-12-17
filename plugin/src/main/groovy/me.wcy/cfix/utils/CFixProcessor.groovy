@@ -1,6 +1,5 @@
 package me.wcy.cfix.utils
 
-import com.android.build.gradle.api.BaseVariant
 import me.wcy.cfix.CFixExtension
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
@@ -9,11 +8,7 @@ import org.objectweb.asm.*
 class CFixProcessor {
 
     static processJar(File jarFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
-        if (!jarFile.exists()) {
-            return
-        }
-
-        if (shouldProcessJar(jarFile.absolutePath)) {
+        if (shouldProcessJar(jarFile)) {
             println("> cfix: process jar: ${jarFile.absolutePath}")
 
             File optDirFile = new File(jarFile.absolutePath.substring(0, jarFile.absolutePath.length() - 4))
@@ -28,10 +23,7 @@ class CFixProcessor {
 
             optDirFile.eachFileRecurse { file ->
                 if (file.isFile()) {
-                    String classPath = file.absolutePath.substring(optDirFile.absolutePath.length() + 1)
-                    if (shouldProcessClass(classPath, extension)) {
-                        referHackWhenInit(optDirFile.absolutePath, classPath, hashFile, hashMap, patchDir)
-                    }
+                    processClass(file, hashFile, hashMap, patchDir, extension)
                 }
             }
 
@@ -42,27 +34,20 @@ class CFixProcessor {
         }
     }
 
-    static processClass(BaseVariant variant, File classFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
-        if (!classFile.exists()) {
-            return
-        }
-
-        String[] array = CFixFileUtils.formatPath(classFile.absolutePath).split("/${variant.dirName}/")
-        String dir = array[0] + "/" + variant.dirName
-        String classPath = array[1]
-        if (shouldProcessClass(classPath, extension)) {
-            referHackWhenInit(dir, classPath, hashFile, hashMap, patchDir)
+    static processClass(File classFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
+        if (shouldProcessClass(classFile, extension)) {
+            referHackWhenInit(classFile, hashFile, hashMap, patchDir)
         }
     }
 
-    private static void referHackWhenInit(String dir, String classPath, File hashFile, Map hashMap,
+    private static void referHackWhenInit(File classFile, File hashFile, Map hashMap,
                                           File patchDir) {
-        File file = new File(dir + "/" + classPath)
-        File optClass = new File(file.parent, file.name + ".opt")
-        FileInputStream inputStream = new FileInputStream(file)
+        File optClass = new File(classFile.parent, classFile.name + ".opt")
+        FileInputStream inputStream = new FileInputStream(classFile)
         FileOutputStream outputStream = new FileOutputStream(optClass)
 
         ClassReader cr = new ClassReader(inputStream)
+        String className = cr.className
         ClassWriter cw = new ClassWriter(cr, 0)
         ClassVisitor cv = new ClassVisitor(Opcodes.ASM4, cw) {
             @Override
@@ -85,38 +70,49 @@ class CFixProcessor {
         outputStream.write(cw.toByteArray())
         inputStream.close()
         outputStream.close()
-        if (file.exists()) {
-            file.delete()
+        if (classFile.exists()) {
+            classFile.delete()
         }
-        optClass.renameTo(file)
+        optClass.renameTo(classFile)
 
         // save hash
-        FileInputStream is = new FileInputStream(file)
+        FileInputStream is = new FileInputStream(classFile)
         String hash = DigestUtils.sha1Hex(is)
         is.close()
-        hashFile.append(CFixMapUtils.format(classPath, hash))
+        hashFile.append(CFixMapUtils.format(className, hash))
 
-        if (CFixMapUtils.notSame(hashMap, classPath, hash)) {
-            FileUtils.copyFile(file, CFixFileUtils.touchFile(patchDir, classPath))
+        if (CFixMapUtils.notSame(hashMap, className, hash)) {
+            FileUtils.copyFile(classFile, CFixFileUtils.touchFile(patchDir, className + ".class"))
         }
     }
 
-    private static boolean shouldProcessJar(String jarPath) {
-        jarPath = CFixFileUtils.formatPath(jarPath)
+    private static boolean shouldProcessJar(File jarFile) {
+        if (!jarFile.exists() || !jarFile.name.endsWith(".jar")) {
+            return false
+        }
+
+        String jarPath = CFixFileUtils.formatPath(jarFile.absolutePath)
         return (jarPath.endsWith("/classes.jar") || jarPath.endsWith("/main.jar")) &&
                 !jarPath.contains("/.android/build-cache/") &&
                 !jarPath.contains("/android/m2repository/")
     }
 
-    private static boolean shouldProcessClass(String classPath, CFixExtension extension) {
-        classPath = CFixFileUtils.formatPath(classPath)
-        return classPath.endsWith(".class") &&
-                !classPath.startsWith("me/wcy/cfix/lib/") &&
-                !classPath.contains("android/support/") &&
-                !classPath.contains("/R\$") &&
-                !classPath.endsWith("/R.class") &&
-                !classPath.endsWith("/BuildConfig.class") &&
-                CFixSetUtils.isIncluded(classPath, extension.includePackage) &&
-                !CFixSetUtils.isExcluded(classPath, extension.excludeClass)
+    private static boolean shouldProcessClass(File classFile, CFixExtension extension) {
+        if (!classFile.exists() || !classFile.name.endsWith(".class")) {
+            return false
+        }
+
+        FileInputStream inputStream = new FileInputStream(classFile)
+        ClassReader cr = new ClassReader(inputStream)
+        String className = cr.className
+        inputStream.close()
+
+        return !className.startsWith("me/wcy/cfix/lib/") &&
+                !className.contains("android/support/") &&
+                !className.contains("/R\$") &&
+                !className.endsWith("/R") &&
+                !className.endsWith("/BuildConfig") &&
+                CFixSetUtils.isIncluded(className, extension.includePackage) &&
+                !CFixSetUtils.isExcluded(className, extension.excludeClass)
     }
 }

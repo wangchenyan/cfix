@@ -26,7 +26,7 @@ class CFixAndroidUtils {
         String applicationName = manifest.application[0].attribute(androidTag.name)
 
         if (applicationName != null) {
-            return applicationName.replace(".", "/") + ".class"
+            return applicationName.replace(".", "/")
         }
         return null
     }

@@ -3,7 +3,7 @@ apply plugin: 'me.wcy.cfix'
 
 cfix {
     includePackage = ['me/wcy/cfix/simple']
-    excludeClass = []
+    excludeClass = ['me/wcy/cfix/simple/Test']
     debugOn = true
 
     sign = true
