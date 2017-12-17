@@ -1,1 +1,1 @@
-include ':app', ':cfix', ':plugin'
+include ':sample', ':cfix', ':plugin'

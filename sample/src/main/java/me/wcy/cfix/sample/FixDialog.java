@@ -1,4 +1,4 @@
-package me.wcy.cfix.simple;
+package me.wcy.cfix.sample;
 
 import android.content.Context;
 import android.support.v7.app.AlertDialog;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="me.wcy.cfix.simple">
+    package="me.wcy.cfix.sample">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 

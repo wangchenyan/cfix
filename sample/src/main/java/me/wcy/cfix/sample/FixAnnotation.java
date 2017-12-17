@@ -1,4 +1,4 @@
-package me.wcy.cfix.simple;
+package me.wcy.cfix.sample;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

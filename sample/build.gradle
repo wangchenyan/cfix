@@ -2,8 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'me.wcy.cfix'
 
 cfix {
-    includePackage = ['me/wcy/cfix/simple']
-    excludeClass = ['me/wcy/cfix/simple/Test']
+    includePackage = ['me/wcy/cfix/sample']
+    excludeClass = ['me/wcy/cfix/sample/Test']
     debugOn = true
 
     sign = true
@@ -18,7 +18,7 @@ android {
     buildToolsVersion '25.0.3'
 
     defaultConfig {
-        applicationId "me.wcy.cfix.simple"
+        applicationId "me.wcy.cfix.sample"
         minSdkVersion 14
         targetSdkVersion 22
         versionCode 1

@@ -1,4 +1,4 @@
-package me.wcy.cfix.simple;
+package me.wcy.cfix.sample;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

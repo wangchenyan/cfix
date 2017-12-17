@@ -1,4 +1,4 @@
-package me.wcy.cfix.simple;
+package me.wcy.cfix.sample;
 
 import android.app.Application;
 import android.content.Context;
