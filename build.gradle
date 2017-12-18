@@ -9,7 +9,8 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
-        classpath 'me.wcy.cfix:gradle:1.0'
+        classpath 'com.novoda:bintray-release:0.8.0'
+        classpath 'me.wcy:cfix-gradle:1.0'
     }
 }
 

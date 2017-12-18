@@ -1,5 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply plugin: 'com.novoda.bintray-release'
 
 repositories {
     jcenter()
@@ -14,14 +15,23 @@ dependencies {
     compile 'org.ow2.asm:asm-all:5.0.3'
 }
 
-group = 'me.wcy.cfix'
-archivesBaseName = 'gradle'
+group = 'me.wcy'
+archivesBaseName = 'cfix-gradle'
 version = '1.0'
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: uri('../repo'))
-        }
-    }
+publish {
+    userOrg = 'chanwong21'
+    groupId = 'me.wcy'
+    artifactId = 'cfix-gradle'
+    publishVersion = '1.0'
+    desc = 'Android hotfix gradle plugin'
+    website = 'https://github.com/wangchenyan/CFix'
 }
+
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url: uri('../repo'))
+//        }
+//    }
+//}
