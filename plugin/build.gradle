@@ -17,13 +17,13 @@ dependencies {
 
 group = 'me.wcy'
 archivesBaseName = 'cfix-gradle'
-version = '1.0'
+version = rootProject.ext.versionName
 
 publish {
     userOrg = 'chanwong21'
     groupId = 'me.wcy'
     artifactId = 'cfix-gradle'
-    publishVersion = '1.0'
+    publishVersion = rootProject.ext.versionName
     desc = 'Android hotfix gradle plugin'
     website = 'https://github.com/wangchenyan/CFix'
 }

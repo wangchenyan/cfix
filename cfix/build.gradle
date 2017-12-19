@@ -1,7 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-
-group = 'com.github.wangchenyan'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 25
@@ -10,11 +8,20 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 1
-        versionName "1.0"
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
     }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+publish {
+    userOrg = 'chanwong21'
+    groupId = 'me.wcy'
+    artifactId = 'cfix'
+    publishVersion = rootProject.ext.versionName
+    desc = 'Android hotfix library'
+    website = 'https://github.com/wangchenyan/CFix'
 }
