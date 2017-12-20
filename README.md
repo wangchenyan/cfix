@@ -65,6 +65,7 @@ cfix {
     keyAlias = 'cfix'
     keyPassword = 'android'
 }
+...
 ```
 
 参数说明
@@ -127,7 +128,11 @@ gradlew clean cfix${variant.name.capitalize()}Patch -P cfixDir=CFIX_OUTPUT_DIR
 gradlew clean cfixXiaomiDebugPatch -P cfixDir=D:\Android\AndroidStudioProjects\CFix\sample\cfix
 ```
 
-生成的 Patch 文件位于 module/build/outputs/cfix${variant.dirName}/patch.jar
+生成的 Patch 文件位于
+
+```
+module/build/outputs/cfix${variant.dirName}/patch.jar
+```
 
 ## Sample
 
