@@ -136,7 +136,7 @@ module/build/outputs/cfix${variant.dirName}/patch.jar
 
 ## Sample
 
-[Sample](https://github.com/wangchenyan/CFix/tree/master/sample)
+更多用法请参考 [Sample](https://github.com/wangchenyan/CFix/tree/master/sample)
 
 ## About me
 
