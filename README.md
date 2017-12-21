@@ -32,7 +32,7 @@ buildscript {
 }
 ```
 
-2. Add library dependency
+2. Add library dependency & apply plugin
 
 ```
 // module build.gradle
