@@ -3,7 +3,7 @@ apply plugin: 'me.wcy.cfix'
 
 cfix {
     includePackage = ['me/wcy/cfix/sample']
-    excludeClass = ['me/wcy/cfix/sample/Test']
+    excludeClass = ['me/wcy/cfix/sample/Exclude']
     debugOn = true
 
     sign = true
@@ -14,8 +14,8 @@ cfix {
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.3'
 
     defaultConfig {
         applicationId "me.wcy.cfix.sample"
@@ -50,14 +50,15 @@ android {
         }
     }
 
-    productFlavors {
-        xiaomi {}
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:appcompat-v7:26.1.0'
     //compile project(':cfix')
     compile 'me.wcy:cfix:1.0'
 }

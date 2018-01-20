@@ -19,7 +19,7 @@ class CFixSetUtils {
 
         boolean isIncluded = false
         includePackage.each { include ->
-            if (path.contains(include)) {
+            if (path.startsWith(include)) {
                 isIncluded = true
             }
         }

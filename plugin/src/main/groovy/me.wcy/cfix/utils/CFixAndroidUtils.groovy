@@ -14,6 +14,7 @@ class CFixAndroidUtils {
     private static final String PATCH_NAME = "patch.jar"
 
     static String getApplication(Set<File> manifestFiles) {
+        manifestFiles = CFixFileUtils.getFiles(manifestFiles)
         File manifestFile = null
         for (File file : manifestFiles) {
             if (file.exists() && file.absolutePath.endsWith("AndroidManifest.xml")) {
@@ -51,7 +52,7 @@ class CFixAndroidUtils {
             }
             String error = stdout.toString().trim()
             if (error) {
-                println "dex error:" + error
+                CFixLogger.i("dex error: ${error}")
             }
         }
         return patchPath
@@ -74,7 +75,7 @@ class CFixAndroidUtils {
             if (mappingFile.exists()) {
                 transform.applyTestedMapping(mappingFile)
             } else {
-                println "${mappingFile} does not exist"
+                CFixLogger.i("${mappingFile} does not exist")
             }
         }
     }
@@ -89,7 +90,7 @@ class CFixAndroidUtils {
             throw new IllegalArgumentException("> cfix: store file not exists")
         }
 
-        println("> cfix: sign patch")
+        CFixLogger.i("sign patch")
 
         List<String> command = [JavaEnvUtils.getJdkExecutable('jarsigner'),
                                 '-verbose',

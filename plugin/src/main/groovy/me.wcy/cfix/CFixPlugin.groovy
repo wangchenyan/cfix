@@ -1,9 +1,6 @@
 package me.wcy.cfix
 
-import me.wcy.cfix.utils.CFixAndroidUtils
-import me.wcy.cfix.utils.CFixFileUtils
-import me.wcy.cfix.utils.CFixMapUtils
-import me.wcy.cfix.utils.CFixProcessor
+import me.wcy.cfix.utils.*
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -36,16 +33,31 @@ class CFixPlugin implements Plugin<Project> {
                     File patchDir
                     Map hashMap
 
-                    Task transformClassesAndResourcesWithProguardTask = project.tasks.findByName("transformClassesAndResourcesWithProguardFor${variant.name.capitalize()}")
-                    Task transformClassesWithDexTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}")
+                    CFixLogger.init(variant)
 
-                    Task processManifestTask = project.tasks.findByName("process${variant.name.capitalize()}Manifest")
-                    Set<File> manifestFiles = processManifestTask.outputs.files.files
+                    // Gradle 1.5 - 2.x
+                    Task dexTask2 = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}")
+                    // Gradle 3.0+
+                    Task dexTask3 = project.tasks.findByName("transformClassesWithDexBuilderFor${variant.name.capitalize()}")
+
+                    Task dexTask
+                    if (dexTask2 != null) {
+                        dexTask = dexTask2
+                    } else if (dexTask3 != null) {
+                        dexTask = dexTask3
+                    } else {
+                        CFixLogger.i("Gradle Version not support")
+                        return
+                    }
+
+                    Task manifestTask = project.tasks.findByName("process${variant.name.capitalize()}Manifest")
+                    Task proguardTask = project.tasks.findByName("transformClassesAndResourcesWithProguardFor${variant.name.capitalize()}")
+                    Set<File> manifestFiles = manifestTask.outputs.files.files
 
                     File oldCFixDir = CFixFileUtils.getFileFromProperty(project, CFIX_DIR)
                     if (oldCFixDir) {
                         File mappingFile = CFixFileUtils.getVariantFile(oldCFixDir, variant, MAPPING_TXT)
-                        CFixAndroidUtils.applymapping(transformClassesAndResourcesWithProguardTask, mappingFile)
+                        CFixAndroidUtils.applymapping(proguardTask, mappingFile)
 
                         File hashFile = CFixFileUtils.getVariantFile(oldCFixDir, variant, HASH_TXT)
                         hashMap = CFixMapUtils.parseMap(hashFile)
@@ -58,9 +70,9 @@ class CFixPlugin implements Plugin<Project> {
 
                     String cfixJarBeforeDex = "cfixJarBeforeDex${variant.name.capitalize()}"
                     project.task(cfixJarBeforeDex) << {
-                        Set<File> inputFiles = transformClassesWithDexTask.inputs.files.files
+                        Set<File> inputFiles = dexTask.inputs.files.files
                         inputFiles.each { file ->
-                            println("> cfix: input: ${file.absolutePath}")
+                            CFixLogger.i("transformClassesTask input: ${file.absolutePath}")
                         }
                         Set<File> files = CFixFileUtils.getFiles(inputFiles)
                         files.each { file ->
@@ -75,7 +87,7 @@ class CFixPlugin implements Plugin<Project> {
                     cfixJarBeforeDexTask = project.tasks[cfixJarBeforeDex]
 
                     cfixJarBeforeDexTask.doFirst {
-                        println("> cfix: variant: ${variant.name}")
+                        CFixLogger.init(variant)
 
                         String applicationName = CFixAndroidUtils.getApplication(manifestFiles)
                         if (applicationName != null) {
@@ -94,15 +106,15 @@ class CFixPlugin implements Plugin<Project> {
                     }
 
                     cfixJarBeforeDexTask.doLast {
-                        if (transformClassesAndResourcesWithProguardTask) {
+                        if (proguardTask) {
                             File mapFile = new File("${project.buildDir}/outputs/mapping/${variant.dirName}/${MAPPING_TXT}")
                             File newMapFile = new File("${cfixDir}/${variant.dirName}/${MAPPING_TXT}")
                             FileUtils.copyFile(mapFile, newMapFile)
                         }
                     }
 
-                    cfixJarBeforeDexTask.dependsOn transformClassesWithDexTask.taskDependencies.getDependencies(transformClassesWithDexTask)
-                    transformClassesWithDexTask.dependsOn cfixJarBeforeDexTask
+                    cfixJarBeforeDexTask.dependsOn dexTask.taskDependencies.getDependencies(dexTask)
+                    dexTask.dependsOn cfixJarBeforeDexTask
 
                     String cfixPatch = "cfix${variant.name.capitalize()}Patch"
                     project.task(cfixPatch) << {

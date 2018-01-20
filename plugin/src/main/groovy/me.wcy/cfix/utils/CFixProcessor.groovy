@@ -9,24 +9,32 @@ class CFixProcessor {
 
     static processJar(File jarFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
         if (shouldProcessJar(jarFile)) {
-            println("> cfix: process jar: ${jarFile.absolutePath}")
+            CFixLogger.i("process jar: ${jarFile.absolutePath}")
 
             File optDirFile = new File(jarFile.absolutePath.substring(0, jarFile.absolutePath.length() - 4))
-            File metaInfoDir = new File(optDirFile, "META-INF")
-            File optJar = new File(jarFile.parent, jarFile.name + ".opt")
-
             CFixFileUtils.unZipJar(jarFile, optDirFile)
 
+            File metaInfoDir = new File(optDirFile, "META-INF")
             if (metaInfoDir.exists()) {
                 metaInfoDir.deleteDir()
             }
 
+            int counter = 0
             optDirFile.eachFileRecurse { file ->
                 if (file.isFile()) {
-                    processClass(file, hashFile, hashMap, patchDir, extension)
+                    boolean result = processClass(file, hashFile, hashMap, patchDir, extension)
+                    if (result) {
+                        counter++
+                    }
                 }
             }
 
+            if (counter == 0) {
+                optDirFile.deleteDir()
+                return
+            }
+
+            File optJar = new File(jarFile.parent, jarFile.name + ".opt")
             CFixFileUtils.zipJar(optDirFile, optJar)
             jarFile.delete()
             optJar.renameTo(jarFile)
@@ -34,10 +42,12 @@ class CFixProcessor {
         }
     }
 
-    static processClass(File classFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
+    static boolean processClass(File classFile, File hashFile, Map hashMap, File patchDir, CFixExtension extension) {
         if (shouldProcessClass(classFile, extension)) {
             referHackWhenInit(classFile, hashFile, hashMap, patchDir)
+            return true
         }
+        return false
     }
 
     private static void referHackWhenInit(File classFile, File hashFile, Map hashMap,
@@ -92,9 +102,7 @@ class CFixProcessor {
         }
 
         String jarPath = CFixFileUtils.formatPath(jarFile.absolutePath)
-        return (jarPath.endsWith("/classes.jar") || jarPath.endsWith("/main.jar")) &&
-                !jarPath.contains("/.android/build-cache/") &&
-                !jarPath.contains("/android/m2repository/")
+        return jarPath.contains("/build/intermediates/")
     }
 
     private static boolean shouldProcessClass(File classFile, CFixExtension extension) {

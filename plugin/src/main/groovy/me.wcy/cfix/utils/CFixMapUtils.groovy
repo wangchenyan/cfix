@@ -28,7 +28,7 @@ class CFixMapUtils {
                 }
             }
         } else {
-            println "$hashFile does not exist"
+            CFixLogger.i("$hashFile does not exist")
         }
         return hashMap
     }
