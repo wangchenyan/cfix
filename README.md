@@ -1,6 +1,6 @@
 # CFix
 
-[![Download](https://api.bintray.com/packages/chanwong21/maven/cfix/images/download.svg)](https://bintray.com/chanwong21/maven/cfix/_latestVersion)
+[![cfix](https://api.bintray.com/packages/chanwong21/maven/cfix/images/download.svg)](https://bintray.com/chanwong21/maven/cfix/_latestVersion)[![cfix-gradle](https://api.bintray.com/packages/chanwong21/maven/cfix-gradle/images/download.svg)](https://bintray.com/chanwong21/maven/cfix-gradle/_latestVersion)
 
 [手把手带你打造一个 Android 热修复框架](https://www.jianshu.com/p/a7f11e0f3a2e)
 
