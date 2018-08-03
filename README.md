@@ -1,10 +1,10 @@
-# CFix
+# cfix
 
 cfix [![cfix](https://api.bintray.com/packages/chanwong21/maven/cfix/images/download.svg)](https://bintray.com/chanwong21/maven/cfix/_latestVersion) cfix-gradle [![cfix-gradle](https://api.bintray.com/packages/chanwong21/maven/cfix-gradle/images/download.svg)](https://bintray.com/chanwong21/maven/cfix-gradle/_latestVersion)
 
 [手把手带你打造一个 Android 热修复框架](https://www.jianshu.com/p/a7f11e0f3a2e)
 
-CFix 是一个基于 [QQ 空间热修复方案](https://mp.weixin.qq.com/s/xuvHomyTzTA90IEWDrdwgw)打造的 Android 热修复框架。
+cfix 是一个基于 [QQ 空间热修复方案](https://mp.weixin.qq.com/s/xuvHomyTzTA90IEWDrdwgw)打造的 Android 热修复框架。
 
 大量参考了 [Nuwa](https://github.com/jasonross/Nuwa)，可以说是 Nuwa 的衍生版，感谢 Nuwa 作者。
 
@@ -146,7 +146,7 @@ module/build/outputs/cfix${variant.dirName}/patch.jar
 
 ## Sample
 
-更多用法请参考 [Sample](https://github.com/wangchenyan/CFix/tree/master/sample)
+更多用法请参考 [Sample](https://github.com/wangchenyan/cfix/tree/master/sample)
 
 ## About me
 
