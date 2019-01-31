@@ -5,7 +5,7 @@
 | cfix | [![cfix](https://api.bintray.com/packages/chanwong21/maven/cfix/images/download.svg)](https://bintray.com/chanwong21/maven/cfix/_latestVersion) |
 | cfix-gradle | [![cfix-gradle](https://api.bintray.com/packages/chanwong21/maven/cfix-gradle/images/download.svg)](https://bintray.com/chanwong21/maven/cfix-gradle/_latestVersion) |
 
-[手把手带你打造一个 Android 热修复框架](https://www.jianshu.com/p/a7f11e0f3a2e)
+[手把手带你打造一个 Android 热修复框架](https://juejin.im/post/5c373a36e51d4552411abe88)
 
 cfix 是一个基于 [QQ 空间热修复方案](https://mp.weixin.qq.com/s/xuvHomyTzTA90IEWDrdwgw)打造的 Android 热修复框架。
 
@@ -153,7 +153,7 @@ module/build/outputs/cfix${variant.dirName}/patch.jar
 
 ## About me
 
-简书：http://www.jianshu.com/users/3231579893ac
+掘金：https://juejin.im/user/58abd9f1da2f607e924e945a
 
 微博：http://weibo.com/wangchenyan1993
 
