@@ -69,17 +69,19 @@ class CFixPlugin implements Plugin<Project> {
                     File hashFile = new File(outputDir, HASH_TXT)
 
                     String cfixJarBeforeDex = "cfixJarBeforeDex${variant.name.capitalize()}"
-                    project.task(cfixJarBeforeDex) << {
-                        Set<File> inputFiles = dexTask.inputs.files.files
-                        inputFiles.each { file ->
-                            CFixLogger.i("transformClassesTask input: ${file.absolutePath}")
-                        }
-                        Set<File> files = CFixFileUtils.getFiles(inputFiles)
-                        files.each { file ->
-                            if (file.name.endsWith(".jar")) {
-                                CFixProcessor.processJar(file, hashFile, hashMap, patchDir, extension)
-                            } else if (file.name.endsWith(".class")) {
-                                CFixProcessor.processClass(file, hashFile, hashMap, patchDir, extension)
+                    project.task(cfixJarBeforeDex) {
+                        doLast {
+                            Set<File> inputFiles = dexTask.inputs.files.files
+                            inputFiles.each { file ->
+                                CFixLogger.i("transformClassesTask input: ${file.absolutePath}")
+                            }
+                            Set<File> files = CFixFileUtils.getFiles(inputFiles)
+                            files.each { file ->
+                                if (file.name.endsWith(".jar")) {
+                                    CFixProcessor.processJar(file, hashFile, hashMap, patchDir, extension)
+                                } else if (file.name.endsWith(".class")) {
+                                    CFixProcessor.processClass(file, hashFile, hashMap, patchDir, extension)
+                                }
                             }
                         }
                     }
@@ -117,10 +119,12 @@ class CFixPlugin implements Plugin<Project> {
                     dexTask.dependsOn cfixJarBeforeDexTask
 
                     String cfixPatch = "cfix${variant.name.capitalize()}Patch"
-                    project.task(cfixPatch) << {
-                        if (patchDir) {
-                            String patchPatch = CFixAndroidUtils.dex(project, patchDir)
-                            CFixAndroidUtils.signPatch(patchPatch, extension)
+                    project.task(cfixPatch) {
+                        doLast {
+                            if (patchDir) {
+                                String patchPatch = CFixAndroidUtils.dex(project, patchDir)
+                                CFixAndroidUtils.signPatch(patchPatch, extension)
+                            }
                         }
                     }
                     Task cfixPatchTask = project.tasks[cfixPatch]
@@ -128,10 +132,12 @@ class CFixPlugin implements Plugin<Project> {
                 }
             }
 
-            project.task(CFIX_PATCHES) << {
-                patchList.each { patchDir ->
-                    String patchPatch = CFixAndroidUtils.dex(project, patchDir)
-                    CFixAndroidUtils.signPatch(patchPatch, extension)
+            project.task(CFIX_PATCHES) {
+                doLast {
+                    patchList.each { patchDir ->
+                        String patchPatch = CFixAndroidUtils.dex(project, patchDir)
+                        CFixAndroidUtils.signPatch(patchPatch, extension)
+                    }
                 }
             }
 

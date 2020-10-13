@@ -2,26 +2,25 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion Integer.parseInt(COMPILE_SDK_VERSION)
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode rootProject.ext.versionCode
-        versionName rootProject.ext.versionName
+        versionCode 1
+        versionName VERSION_NAME
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    api fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 publish {
     userOrg = 'chanwong21'
     groupId = 'me.wcy'
     artifactId = 'cfix'
-    publishVersion = rootProject.ext.versionName
+    publishVersion = VERSION_NAME
     desc = 'Android hotfix library'
     website = 'https://github.com/wangchenyan/CFix'
 }

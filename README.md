@@ -135,16 +135,16 @@ module/build/outputs/cfix
 Run in terminal
 
 ```
-gradlew clean cfix${variant.name.capitalize()}Patch -P cfixDir=CFIX_OUTPUT_DIR
+./gradlew clean cfix${variant.name.capitalize()}Patch -P cfixDir=CFIX_OUTPUT_DIR
 
 例如
-gradlew clean cfixXiaomiDebugPatch -P cfixDir=D:\Android\AndroidStudioProjects\CFix\sample\cfix
+./gradlew clean cfixDebugPatch -P cfixDir=/Users/wcy/Files/Android/AndroidStudioProjects/cfix/sample/cfix/
 ```
 
 生成的 Patch 文件位于
 
 ```
-module/build/outputs/cfix${variant.dirName}/patch.jar
+module/build/outputs/cfix/${variant.dirName}/patch.jar
 ```
 
 ## Sample

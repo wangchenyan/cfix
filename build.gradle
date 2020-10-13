@@ -2,13 +2,13 @@
 
 buildscript {
     repositories {
+        // maven { url uri('repo') }
         jcenter()
         google()
-        //maven { url uri('repo') }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:3.1.4'
         classpath 'com.novoda:bintray-release:0.8.0'
         classpath 'me.wcy:cfix-gradle:1.1'
     }
@@ -23,9 +23,4 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-ext {
-    versionCode = 2
-    versionName = '1.1'
 }

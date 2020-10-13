@@ -8,30 +8,30 @@ repositories {
 }
 
 dependencies {
-    compile gradleApi()
-    compile 'com.android.tools.build:gradle:1.5.0'
-    compile 'commons-io:commons-io:2.4'
-    compile 'commons-codec:commons-codec:1.11'
-    compile 'org.ow2.asm:asm-all:5.0.3'
+    implementation gradleApi()
+    implementation 'com.android.tools.build:gradle:1.5.0'
+    implementation 'commons-io:commons-io:2.4'
+    implementation 'commons-codec:commons-codec:1.11'
+    implementation 'org.ow2.asm:asm-all:5.0.3'
 }
 
 group = 'me.wcy'
 archivesBaseName = 'cfix-gradle'
-version = rootProject.ext.versionName
+version = VERSION_NAME
 
 publish {
     userOrg = 'chanwong21'
     groupId = 'me.wcy'
     artifactId = 'cfix-gradle'
-    publishVersion = rootProject.ext.versionName
+    publishVersion = VERSION_NAME
     desc = 'Android hotfix gradle plugin'
     website = 'https://github.com/wangchenyan/CFix'
 }
 
-//uploadArchives {
-//    repositories {
-//        mavenDeployer {
-//            repository(url: uri('../repo'))
-//        }
-//    }
-//}
+// uploadArchives {
+//     repositories {
+//         mavenDeployer {
+//             repository(url: uri('../repo'))
+//         }
+//     }
+// }
