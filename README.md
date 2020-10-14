@@ -153,9 +153,9 @@ module/build/outputs/cfix/${variant.dirName}/patch.jar
 
 ## About me
 
-掘金：https://juejin.im/user/58abd9f1da2f607e924e945a
+掘金：https://juejin.im/user/2313028193754168
 
-微博：http://weibo.com/wangchenyan1993
+微博：https://weibo.com/wangchenyan1993
 
 ## License
 
